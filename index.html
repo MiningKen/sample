@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form onsubmit="return message(event)">
+      <div>
+        <label for="username">姓名</label>
+        <input type="text" id="username" name="username" />
+      </div>
+      <div>
+        <label for="userage">年紀:</label>
+        <input type="number" id="userage" name="userage" />
+      </div>
+      <div>
+        <input type="submit" value="submit" />
+      </div>
+    </form>
+    <button onclick="deleteAll()">清空資料庫</button>
+    <div id="message"></div>
+    <p>test</p>
+  </body>
+  <script>
+    async function message(event) {
+      event.preventDefault();
+
+      var username = document.getElementById("username").value;
+      var userage = document.getElementById("userage").value;
+      var message = "您好，" + userage + "歲的" + username;
+
+      const requestData = JSON.stringify({ username, userage });
+
+      // 顯示要傳送到後端的資料
+      console.log(requestData);
+
+      // 使用fetch API將資料送到後端
+      const response = await fetch("http://localhost:3000/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: requestData,
+      }).catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+
+      var existingMessages = document.getElementById("message").innerText;
+      document.getElementById("message").innerText =
+        existingMessages + "\n" + message;
+
+      return false; // 防止表單被提交
+    }
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const response = await fetch("http://localhost:3000/get-data");
+        const data = await response.json();
+        const messageDiv = document.getElementById("message");
+
+        data.forEach((item) => {
+          messageDiv.innerHTML += `<p>您好，${item.age}歲的${item.name}</p>`;
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    });
+  </script>
+  <script>
+    async function deleteAll() {
+      try {
+        const response = await fetch("http://localhost:3000/delete-all");
+        const data = await response.json();
+        console.log(data.message);
+
+        // 清空畫面上的資料
+        document.getElementById("message").innerHTML = "";
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+  </script>
+</html>
